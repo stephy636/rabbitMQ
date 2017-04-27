@@ -1,0 +1,94 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:rabbit="http://www.springframework.org/schema/rabbit"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/rabbit
+           http://www.springframework.org/schema/rabbit/spring-rabbit.xsd
+           http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <description>rabbitmq 连接服务配置</description>
+    <context:property-placeholder location="classpath:/spring/config.properties"/><!-- 加载配置文件 -->
+    <!-- 连接配置 -->
+    <!-- 连接服务配置  -->
+    <!--    <rabbit:connection-factory id="riskConnectionFactory"
+                                   addresses="${riskmanager.rabbit.mq.addresses}"
+                                   username="${riskmanager.rabbit.mq.user}"
+                                   password="${riskmanager.rabbit.mq.password}"
+                                   virtual-host="${riskmanager.rabbit.mq.vhost}"
+                                   thread-factory="rabbitThreadFactory"/>
+
+          <rabbit:admin connection-factory="riskConnectionFactory" id="riskTestMQAdmin"/>
+    -->
+    <!-- 信审连接服务配置  -->
+    <!--<rabbit:connection-factory id="creditConnectionFactory"
+                              addresses="${credit.audit.rabbit.mq.addresses}"
+                              username="${credit.audit.rabbit.mq.user}"
+                              password="${credit.audit.rabbit.mq.password}"
+                              virtual-host="${credit.audit.rabbit.mq.vhost}"
+                              thread-factory="rabbitThreadFactory"/>
+
+   <rabbit:admin connection-factory="creditConnectionFactory" id="creditTestMQAdmin"/>
+  -->
+
+    <!-- 貔貅连接服务配置  -->
+    <rabbit:connection-factory id="loanConnectionFactory"
+                               addresses="${loan.rabbit.mq.addresses}"
+                               username="${loan.rabbit.mq.user}"
+                               password="${loan.rabbit.mq.password}"
+                               virtual-host="${loan.rabbit.mq.vhost}"
+                               thread-factory="rabbitThreadFactory"/>
+
+    <rabbit:admin connection-factory="loanConnectionFactory" id="loanTestMQAdmin"/>
+
+
+    <bean id="rabbitThreadFactory" class="org.springframework.scheduling.concurrent.CustomizableThreadFactory">
+        <constructor-arg value="rabbitmq-"/>
+    </bean>
+
+    <!-- spring template声明-->
+    <!--
+    <bean id="riskRabbitTemplate" class="org.springframework.amqp.rabbit.core.RabbitTemplate">
+        <property name="connectionFactory" ref="riskConnectionFactory"/>
+        <property name="exchange" value="autoTest.exchange"/>
+        <property name="confirmCallback" ref="rabbitConfirmCallback"/>
+        <property name="messageConverter" ref="jsonMessageConverter"/>
+    </bean>
+    <bean id="creditRabbitTemplate" class="org.springframework.amqp.rabbit.core.RabbitTemplate">
+        <property name="connectionFactory" ref="creditConnectionFactory"/>
+        <property name="exchange" value="dai.exchange"/>
+        <property name="confirmCallback" ref="rabbitConfirmCallback"/>
+        <property name="messageConverter" ref="jsonMessageConverter"/>
+    </bean>
+-->
+    <bean id="loanRabbitTemplate" class="org.springframework.amqp.rabbit.core.RabbitTemplate">
+        <property name="connectionFactory" ref="loanConnectionFactory"/>
+        <property name="exchange" value="dai.merchant.exchange"/>
+        <property name="confirmCallback" ref="rabbitConfirmCallback"/>
+        <property name="messageConverter" ref="jsonMessageConverter"/>
+    </bean>
+
+    <bean id="rabbitConfirmCallback" class="MessageConfirmCallbackImpl"/>
+    <!-- 消息对象json转换类 -->
+    <bean id="jsonMessageConverter" class="org.springframework.amqp.support.converter.Jackson2JsonMessageConverter" />
+
+    <!-- declare queues -->
+    <!--
+    <rabbit:queue id="dai.credit.risk.request.queue" name="${riskmanager.rabbit.mq.queue}" durable="true"
+                  declared-by="riskTestMQAdmin"/>
+    <rabbit:queue id="dai.credit.audit.request.queue" name="${credit.audit.request.mq.queue}" durable="true"
+                  declared-by="creditTestMQAdmin"/>
+    -->
+
+    <rabbit:queue id="dai.merchant.notify.queue" name="${loan.request.mq.queue}" durable="true"
+                  declared-by="loanTestMQAdmin"/>
+
+    <!--declare exchange and bindings-->
+    <rabbit:direct-exchange id="exchange" name="dai.merchant.exchange" durable="true" auto-delete="false"
+                            declared-by="loanTestMQAdmin">
+        <rabbit:bindings>
+            <rabbit:binding queue="dai.merchant.notify.queue" key="${loan.request.mq.queue}"/>
+        </rabbit:bindings>
+    </rabbit:direct-exchange>
+
+</beans>

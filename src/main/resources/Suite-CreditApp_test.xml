@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+
+<suite name="Suite test Suite-CreditApp_test">
+    <listeners>
+        <listener class-name="org.testng.reporters.TestHTMLReporter"></listener>
+    </listeners>
+
+    <test verbose="2" name="CreditAppTest">
+        <parameter name="test1" value="test1"></parameter>
+        <classes>
+            <!--dubbo-->
+            <class name="com.netease.loantest.dubbo.pixiuCreditService.CreditAppNewCommonTest"></class>
+            <class name="com.netease.loantest.dubbo.pixiuCreditService.CreditAppNewBizTest"></class>
+            <!--SDK-->
+            <class name="com.netease.loantest.sdk.SdkActiveOrUseLessTest"></class>
+        </classes>
+    </test>
+</suite>
